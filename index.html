@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Zavod paneli</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --series: #2a78d6; --series-soft: rgba(42,120,214,0.12);
+  --up: #006300; --down: #d03b3b; --good: #0ca30c; --serious: #ec835a; --chip: #f0efec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --series: #3987e5; --series-soft: rgba(57,135,229,0.18);
+    --up: #0ca30c; --down: #e66767; --chip: #262624;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --series: #3987e5; --series-soft: rgba(57,135,229,0.18);
+  --up: #0ca30c; --down: #e66767; --chip: #262624;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 12px 16px 40px; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 4px 0 12px; }
+header h1 { font-size: 17px; margin: 0; }
+.muted { color: var(--muted); font-size: 13px; }
+.tabs { display: flex; gap: 4px; background: var(--chip); border-radius: 12px; padding: 4px; position: sticky; top: 0; z-index: 5; }
+.tabs button { flex: 1; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600;
+  font-size: 14px; padding: 8px 4px; border-radius: 9px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-top: 12px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.between { justify-content: space-between; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.name { font-weight: 700; }
+.big { font-size: 26px; font-weight: 700; }
+.up { color: var(--up); font-weight: 600; } .down { color: var(--down); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.stat { background: var(--chip); border-radius: 10px; padding: 8px; }
+.stat b { display: block; font-size: 16px; }
+.stat span { font-size: 12px; color: var(--ink-2); }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+.chips button { border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); font: inherit;
+  font-size: 13px; padding: 6px 12px; border-radius: 999px; white-space: nowrap; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.vid { padding: 12px 0; border-top: 1px solid var(--grid); cursor: pointer; }
+.vid:first-child { border-top: 0; }
+.vid .t { font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bar { height: 6px; background: var(--chip); border-radius: 3px; margin: 8px 0 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--series); border-radius: 0 3px 3px 0; }
+.m { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.badge { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; color: #fff; }
+.badge.yaxshi { background: var(--good); } .badge.sust { background: var(--down); }
+.badge.erta { background: var(--chip); color: var(--ink-2); }
+ol.tav { margin: 8px 0 0; padding-left: 20px; } ol.tav li { margin: 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--axis); }
+td { padding: 8px 4px; border-bottom: 1px solid var(--grid); vertical-align: middle; font-variant-numeric: tabular-nums; }
+td.num, th.num { text-align: right; }
+.spark { position: relative; margin-top: 10px; touch-action: pan-y; }
+.spark svg { display: block; width: 100%; height: 70px; overflow: visible; }
+.tip { position: absolute; top: -6px; transform: translate(-50%, -100%); background: var(--ink); color: var(--surface);
+  font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none; display: none; }
+.tip b { font-size: 13px; }
+.axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.q { padding: 8px 0; border-top: 1px solid var(--grid); display: flex; gap: 10px; }
+.q:first-child { border-top: 0; }
+.q time { color: var(--ink-2); font-variant-numeric: tabular-nums; min-width: 92px; font-size: 13px; }
+.empty { text-align: center; padding: 48px 16px; color: var(--ink-2); }
+/* ---- navbat: YouTube Studio'dagi "Rejalashtirilgan" kabi qatorlar */
+.qhead { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 2px 0; }
+.qhead b { font-size: 15px; }
+.sec { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 4px 8px; }
+.sec h2 { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.sec span { font-size: 12px; color: var(--muted); }
+.list { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.qi { display: flex; gap: 12px; align-items: center; padding: 10px 14px 10px 12px; border-top: 1px solid var(--grid);
+  cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; transition: background .15s; }
+.qi:first-child { border-top: 0; }
+.qi:active { background: var(--chip); }
+.qi.ozgardi::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--series); }
+.qi.faqat { cursor: default; opacity: .75; }
+.th { width: 42px; height: 74px; border-radius: 8px; background: var(--chip) center / cover no-repeat; flex: none; position: relative; overflow: hidden; }
+.th i { position: absolute; right: 3px; bottom: 3px; font: 700 10px/1 system-ui, sans-serif; color: #fff; background: rgba(0,0,0,.62); padding: 2px 4px; border-radius: 4px; }
+.qi .info { flex: 1; min-width: 0; }
+.qi .t { font-weight: 600; font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.qi .sub { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 12px; color: var(--ink-2); min-width: 0; }
+.qi .sub .dot { width: 8px; height: 8px; }
+.qi .ogoh { font-size: 12px; color: var(--serious); margin-top: 3px; }
+.vq { flex: none; text-align: right; font-variant-numeric: tabular-nums; min-width: 54px; }
+.vq b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.vq s, .vq small { display: block; font-size: 11px; color: var(--muted); }
+.qi.ozgardi .vq b { color: var(--series); }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); }
+.tag.p { background: rgba(236,131,90,.16); color: var(--serious); }
+.bosh { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+.saqla-bar { position: sticky; bottom: 12px; margin-top: 16px; display: none; }
+.saqla-bar button { width: 100%; }
+/* ---- pastdan chiqadigan oyna */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.38); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.sheet-bg.ochiq { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-width: 720px; margin: 0 auto; background: var(--surface);
+  border-radius: 22px 22px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 30px rgba(0,0,0,.18);
+  transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1); max-height: 88vh; overflow-y: auto; }
+.sheet.ochiq { transform: none; }
+.grab { width: 36px; height: 5px; border-radius: 3px; background: var(--axis); margin: 0 auto 14px; }
+.sh-top { display: flex; gap: 12px; align-items: center; }
+.sh-top .t { font-weight: 700; font-size: 15px; line-height: 1.3; }
+.lbl { font-size: 12px; font-weight: 700; color: var(--muted); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+.kunlar { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+.kunlar::-webkit-scrollbar { display: none; }
+.kb { flex: none; width: 58px; padding: 8px 0 9px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--ink); text-align: center; font: inherit; cursor: pointer; }
+.kb small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
+.kb b { display: block; font-size: 18px; margin-top: 1px; }
+.kb[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.kb[aria-pressed="true"] small { color: inherit; opacity: .7; }
+.soatlar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sb { border: 1px solid var(--border); background: var(--surface); color: var(--ink); font: 600 15px system-ui, sans-serif;
+  padding: 9px 14px; border-radius: 12px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.sb[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.sb:disabled { opacity: .35; cursor: default; }
+.sb input { border: 0; background: transparent; color: inherit; font: inherit; padding: 0; width: 76px; }
+.tanlov { margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: var(--chip); font-size: 14px; }
+.tanlov b { font-size: 15px; }
+.tanlov .ogoh { color: var(--serious); font-size: 13px; margin-top: 4px; }
+.amallar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.btn { border: 0; border-radius: 14px; padding: 13px 10px; font: 600 15px system-ui, sans-serif; background: var(--chip); color: var(--ink); cursor: pointer; }
+.btn.asosiy { background: var(--series); color: #fff; grid-column: 1 / -1; }
+.btn.asosiy:disabled { opacity: .45; }
+.btn.yengil { background: transparent; color: var(--ink-2); grid-column: 1 / -1; padding: 6px; font-weight: 500; font-size: 14px; }
+.pill { display: inline-block; background: var(--chip); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--ink-2); margin: 6px 6px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Kontent Zavod</h1><span class="muted" id="yangilandi"></span></header>
+  <div id="app"><div class="empty">Yuklanmoqda…</div></div>
+</div>
+<script>
+"use strict";
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); document.documentElement.dataset.theme = tg.colorScheme; } catch (e) {} }
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v; else if (k === "style") n.style.cssText = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const c of kids.flat(Infinity)) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return n;
+};
+const fmt = (n) => n == null ? "–" : String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const qisqa = (n) => n == null ? "–" : n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e4 ? Math.round(n / 1e3) + "k" : n >= 1e3 ? (n / 1e3).toFixed(1) + "k" : String(n);
+const sana = (iso) => { const d = new Date(iso); return d.toLocaleDateString("uz-UZ", { day: "2-digit", month: "2-digit" }) + " " + d.toTimeString().slice(0, 5); };
+const kun = (s) => s.slice(8, 10) + "." + s.slice(5, 7);
+const ochish = (url) => { if (!url) return; if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank", "noopener"); };
+
+function delta(n, birlik = "") {
+  if (n == null || isNaN(n)) return null;
+  const cls = n > 0 ? "up" : n < 0 ? "down" : "muted";
+  const belgi = n > 0 ? "▲ +" : n < 0 ? "▼ " : "";
+  return el("span", { class: cls }, belgi + fmt(n) + birlik);
+}
+
+// ---------------------------------------------------------------- kalit va shifr
+function kalit() {
+  const q = new URLSearchParams(location.search).get("k");
+  if (q) {
+    try { localStorage.setItem("zavod_k", q); } catch (e) {}
+    history.replaceState(null, "", location.pathname);       // kalit manzil satrida qolmasin
+    return q;
+  }
+  try { return localStorage.getItem("zavod_k"); } catch (e) { return null; }
+}
+const b64 = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
+async function och(k) {
+  const r = await fetch("data.enc?t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error("ma'lumot topilmadi");
+  const buf = b64((await r.text()).trim());
+  const key = await crypto.subtle.importKey("raw", b64(k), "AES-GCM", false, ["decrypt"]);
+  const ochiq = await crypto.subtle.decrypt({ name: "AES-GCM", iv: buf.slice(0, 12) }, key, buf.slice(12));
+  return JSON.parse(new TextDecoder().decode(ochiq));
+}
+
+// ---------------------------------------------------------------- grafik: kunlik qamrov (bitta qator)
+function sparkline(qator, nomi) {
+  const W = 300, Hh = 70, p = 4;
+  const vals = qator.map((x) => x[1]);
+  const max = Math.max(1, ...vals);
+  const x = (i) => p + (i * (W - 2 * p)) / Math.max(1, qator.length - 1);
+  const y = (v) => Hh - p - (v / max) * (Hh - 2 * p);
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`); svg.setAttribute("preserveAspectRatio", "none");
+  svg.setAttribute("role", "img"); svg.setAttribute("aria-label", nomi);
+  const mk = (t, a) => { const n = document.createElementNS(ns, t); for (const k in a) n.setAttribute(k, a[k]); svg.append(n); return n; };
+  mk("line", { x1: 0, x2: W, y1: Hh - p, y2: Hh - p, stroke: "var(--axis)", "stroke-width": 1, "vector-effect": "non-scaling-stroke" });
+  const d = qator.map((q, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(q[1]).toFixed(1)}`).join("");
+  mk("path", { d: `${d}L${x(qator.length - 1)},${Hh - p}L${x(0)},${Hh - p}Z`, fill: "var(--series-soft)" });
+  mk("path", { d, fill: "none", stroke: "var(--series)", "stroke-width": 2, "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" });
+  const chiziq = mk("line", { y1: 0, y2: Hh - p, stroke: "var(--muted)", "stroke-width": 1, "vector-effect": "non-scaling-stroke", visibility: "hidden" });
+  const tip = el("div", { class: "tip" });
+  const quti = el("div", { class: "spark" }, svg, tip,
+    el("div", { class: "axis" }, el("span", {}, kun(qator[0][0])), el("span", {}, "eng ko'pi " + qisqa(max)), el("span", {}, kun(qator[qator.length - 1][0]))));
+  const kor = (e) => {
+    const r = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(qator.length - 1, Math.round(((e.clientX - r.left) / r.width) * (qator.length - 1))));
+    const px = (x(i) / W) * r.width;
+    chiziq.setAttribute("x1", x(i)); chiziq.setAttribute("x2", x(i)); chiziq.setAttribute("visibility", "visible");
+    tip.replaceChildren(el("b", {}, fmt(qator[i][1])), " · " + kun(qator[i][0]));
+    tip.style.left = Math.max(40, Math.min(r.width - 40, px)) + "px"; tip.style.display = "block";
+  };
+  const yashir = () => { tip.style.display = "none"; chiziq.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", kor); svg.addEventListener("pointerdown", kor);
+  svg.addEventListener("pointerleave", yashir);
+  return quti;
+}
+
+// ---------------------------------------------------------------- bo'limlar
+const BAHO = { yaxshi: "🏆 Yaxshi", sust: "📉 Sust", erta: "⏳ Erta" };
+
+function umumiy(D) {
+  const out = [];
+  const h = D.hisobot || {};
+  if (h.xulosa || (h.tavsiyalar || []).length) out.push(el("div", { class: "card" },
+    h.xulosa ? el("p", { style: "margin:0" }, h.xulosa) : null,
+    (h.tavsiyalar || []).length ? [el("div", { class: "name", style: h.xulosa ? "margin-top:12px" : "" }, "✅ Nima qilamiz" + (h.sana ? " · " + kun(h.sana) : "")),
+      el("ol", { class: "tav" }, h.tavsiyalar.map((t) => el("li", {}, t)))] : null));
+  for (const a of D.akkauntlar) {
+    const yangi = (a.yangi_obuna_kunlik || []).slice(-7).reduce((s, x) => s + x[1], 0);
+    const kecha = a.kecha || {}, hafta = a.hafta || {}, old = a.oldingi_hafta || {};
+    const ozg = old.views ? Math.round((100 * ((hafta.views || 0) - old.views)) / old.views) : null;
+    const k = a.kutmoqda || {};
+    out.push(el("div", { class: "card" },
+      el("div", { class: "row between" },
+        el("div", { class: "row" }, el("span", { class: "dot", style: `background:${a.rang}` }), el("span", { class: "name" }, a.nomi)),
+        el("span", { class: "muted" }, a.handle)),
+      a.xato ? el("p", { class: "down" }, "Ma'lumot olinmadi") : [
+        el("div", { class: "row", style: "margin-top:6px; align-items:baseline; gap:10px; flex-wrap:wrap" },
+          el("span", { class: "big" }, fmt(a.obunachi)), el("span", { class: "muted" }, "obunachi"),
+          yangi ? el("span", {}, delta(yangi), el("span", { class: "muted" }, " 7 kunda")) : null),
+        el("div", { class: "stats" },
+          el("div", { class: "stat" }, el("b", {}, qisqa(kecha.views)), el("span", {}, "ko'rish kecha")),
+          el("div", { class: "stat" }, el("b", {}, qisqa(kecha.shares)), el("span", {}, "ulashish kecha")),
+          el("div", { class: "stat" }, el("b", {}, qisqa(hafta.views)), el("span", {}, "ko'rish 7 kun "), ozg != null ? delta(ozg, "%") : null)),
+        (() => {                                     // yangi sahifa: boshidagi bo'sh (0) kunlarni ko'rsatmaymiz
+          const q = a.qamrov_kunlik || [];
+          const bosh = Math.max(0, Math.min(q.findIndex((x) => x[1] > 0) - 1, q.length - 2));
+          const kes = q.findIndex((x) => x[1] > 0) < 0 ? [] : q.slice(bosh);
+          return kes.length > 1 ? [el("div", { class: "muted", style: "margin-top:10px" }, "Kunlik qamrov"), sparkline(kes, a.nomi + " kunlik qamrov")] : null;
+        })(),
+        el("div", {}, el("span", { class: "pill" }, "📝 " + (k.ssenariy || 0) + " ssenariy kutmoqda"),
+          el("span", { class: "pill" }, "🎬 " + (k.video || 0) + " video kutmoqda"),
+          el("span", { class: "pill" }, "⚙️ " + (k.ishlanmoqda || 0) + " ishlab chiqarishda"),
+          el("span", { class: "pill" }, "📅 " + (a.navbat || []).length + " navbatda")),
+      ]));
+  }
+  return out;
+}
+
+let filtr = "hammasi", tartib = "yangi";
+function videolar(D) {
+  const nom = Object.fromEntries(D.akkauntlar.map((a) => [a.slug, a]));
+  const ro = el("div", {});
+  const chiz = () => {
+    let vs = D.videolar.filter((v) => filtr === "hammasi" || v.akkaunt === filtr);
+    if (tartib === "kop") vs = [...vs].sort((a, b) => (b.views || 0) - (a.views || 0));
+    const max = Math.max(1, ...vs.map((v) => v.views || 0));
+    ro.replaceChildren(el("div", { class: "card" }, vs.length ? vs.map((v) => el("div", { class: "vid", onclick: () => ochish(v.havola), role: "link", tabindex: "0" },
+      el("div", { class: "row between", style: "align-items:flex-start" }, el("div", { class: "t" }, v.sarlavha || "—"),
+        v.baho ? el("span", { class: "badge " + v.baho }, BAHO[v.baho]) : null),
+      el("div", { class: "muted" }, (nom[v.akkaunt] || {}).nomi + " · " + sana(v.vaqt) + " · " + (v.yosh_soat < 48 ? Math.round(v.yosh_soat) + " soat" : Math.round(v.yosh_soat / 24) + " kun") + (v.rubrika ? " · " + v.rubrika : "")),
+      el("div", { class: "bar" }, el("i", { style: `width:${(100 * (v.views || 0)) / max}%` })),
+      el("div", { class: "m" }, el("span", {}, "👁 " + fmt(v.views)), el("span", {}, "🔁 " + fmt(v.shares)), el("span", {}, "💾 " + fmt(v.saved)),
+        el("span", {}, "❤️ " + fmt(v.likes)), el("span", {}, "💬 " + fmt(v.comments)),
+        v.tomosha_s ? el("span", {}, "⏱ " + v.tomosha_s + " s" + (v.davomiylik ? " / " + Math.round(v.davomiylik) + " s" : "")) : null,
+        v.v24 ? el("span", {}, "24 soatda " + qisqa(v.v24)) : null)))
+      : el("div", { class: "empty" }, "Oxirgi 30 kunda video yo'q")));
+  };
+  const chip = (k, t) => el("button", { "aria-pressed": String(filtr === k), onclick: (e) => { filtr = k; e.target.parentNode.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === e.target))); chiz(); } }, t);
+  const tchip = (k, t) => el("button", { "aria-pressed": String(tartib === k), onclick: (e) => { tartib = k; e.target.parentNode.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === e.target))); chiz(); } }, t);
+  chiz();
+  return [el("div", { class: "chips" }, chip("hammasi", "Hammasi"), D.akkauntlar.map((a) => chip(a.slug, a.nomi))),
+    el("div", { class: "chips" }, tchip("yangi", "Yangilari"), tchip("kop", "Eng ko'p ko'rilgan")), ro];
+}
+
+function mavzular(D) {
+  const ms = D.mavzular || [];
+  const max = Math.max(1, ...ms.map((m) => m.ort_korish));
+  return [el("div", { class: "card" },
+    el("div", { class: "muted" }, "Rubrikalar bo'yicha o'rtacha ko'rish (oxirgi 30 kun, 20 soatdan katta zavod videolari)"),
+    ms.length ? el("table", {},
+      el("thead", {}, el("tr", {}, el("th", {}, "Rubrika"), el("th", { class: "num" }, "Video"), el("th", {}, "O'rtacha ko'rish"), el("th", { class: "num" }, "Ulashish"))),
+      el("tbody", {}, ms.map((m) => el("tr", {},
+        el("td", {}, m.rubrika), el("td", { class: "num" }, m.soni),
+        el("td", {}, el("div", { class: "row" }, el("div", { class: "bar", style: "flex:1; margin:0" }, el("i", { style: `width:${(100 * m.ort_korish) / max}%` })), el("span", { style: "min-width:44px; text-align:right" }, qisqa(m.ort_korish)))),
+        el("td", { class: "num" }, m.ulashish_foiz == null ? "–" : m.ulashish_foiz + "%")))))
+      : el("div", { class: "empty" }, "Hali yetarli ma'lumot yo'q"))];
+}
+
+// ---------------------------------------------------------------- navbat: vaqtni panelda belgilash
+// Vaqtlar Toshkent bo'yicha (UTC+5, yozgi vaqt yo'q) — telefon qaysi mintaqada bo'lsa ham bir xil ko'rinadi.
+const TK = 5 * 3600e3;
+const HAFTA = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
+const HAFTA_Q = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
+const OYLAR = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"];
+const tkKun = (ms) => new Date(ms + TK).toISOString().slice(0, 10);           // "2026-11-05"
+const tkHozir = () => new Date(Date.now() + TK).toISOString().slice(0, 16).replace("T", " ");   // "2026-11-05 10:50"
+const kunQosh = (k, n) => tkKun(Date.parse(k + "T00:00:00Z") - TK + n * 86400e3 + 12 * 3600e3);
+const haftaKuni = (k) => new Date(k + "T12:00:00Z").getUTCDay();
+function kunNomi(k) {
+  const bugun = tkKun(Date.now());
+  const sana = Number(k.slice(8, 10)) + "-" + OYLAR[Number(k.slice(5, 7)) - 1];
+  if (k === bugun) return "Bugun · " + sana;
+  if (k === kunQosh(bugun, 1)) return "Ertaga · " + sana;
+  return HAFTA[haftaKuni(k)] + " · " + sana;
+}
+const asl = (v) => v.vaqt ? v.vaqt.slice(0, 16).replace("T", " ") : null;   // ISO+05:00 → "YYYY-MM-DD HH:MM"
+
+const ozg = new Map();          // id → "YYYY-MM-DD HH:MM" | "p" | "h"
+let nfiltr = "hammasi";
+const SAQLANGAN = "zavod_navbat_kutish";
+
+// Saqlangan, lekin panel ma'lumoti hali yangilanmagan o'zgarishlar (bot qo'llaydi, panel ~1 daqiqada yangilanadi)
+function kutilayotgan(D) {
+  try {
+    const k = JSON.parse(localStorage.getItem(SAQLANGAN) || "null");
+    if (!k) return {};
+    if (Date.parse(D.navbat_yangilandi || D.yangilandi) > k.at || Date.now() - k.at > 15 * 60e3) { localStorage.removeItem(SAQLANGAN); return {}; }
+    return Object.fromEntries(k.o);
+  } catch (e) { return {}; }
+}
+
+// Hozirgi holat (o'zgarishlar bilan): {vaqt: "YYYY-MM-DD HH:MM" | null, holat}
+function joriy(v, kut) {
+  const q = ozg.has(v.id) ? ozg.get(v.id) : kut[v.id];
+  if (q == null) return { vaqt: v.holat === "navbatda" || v.holat === "qolda_joylash" ? asl(v) : null, holat: v.holat };
+  if (q === "p") return { vaqt: null, holat: "pauzada" };
+  if (q === "h") return { vaqt: tkHozir(), holat: "navbatda", hozir: true };
+  return { vaqt: q, holat: "navbatda" };
+}
+
+function ogohlar(v, j, D, kut) {
+  if (!j.vaqt) return [];
+  const akk = D.akkauntlar.find((a) => a.slug === v.akkaunt) || {};
+  const shu = D.navbat.filter((b) => b.akkaunt === v.akkaunt).map((b) => [b, b.id === v.id ? j : joriy(b, kut)]).filter(([, x]) => x.vaqt && x.vaqt.slice(0, 10) === j.vaqt.slice(0, 10));
+  const out = [];
+  const t = Date.parse(j.vaqt.replace(" ", "T") + ":00Z");
+  const yaqin = shu.filter(([b, x]) => b.id !== v.id && Math.abs(Date.parse(x.vaqt.replace(" ", "T") + ":00Z") - t) < 90 * 60e3);
+  if (yaqin.length) out.push("⚠️ " + yaqin.map(([, x]) => x.vaqt.slice(11)).join(", ") + " dagi post bilan juda yaqin");
+  else if (akk.kuniga_max && shu.length > akk.kuniga_max) out.push("⚠️ Shu kuni " + shu.length + " ta post (odatda kuniga " + akk.kuniga_max + ")");
+  return out;
+}
+
+function ozgarishlarniYubor(D) {
+  const o = [...ozg.entries()];
+  if (!o.length) return;
+  const kutish = () => { try { localStorage.setItem(SAQLANGAN, JSON.stringify({ at: Date.now(), o })); } catch (e) {} };
+  const q = tg && tg.initDataUnsafe || {};
+  if (tg && tg.sendData && !q.query_id && tg.platform !== "unknown") {      // pastki «📊 Panel» tugmasidan ochilgan
+    kutish(); tg.sendData(JSON.stringify({ z: "navbat", o }));               // Mini App o'zi yopiladi
+    return;
+  }
+  // menyu/xabar tugmasidan ochilgan — sendData ishlamaydi, bot havolasi orqali yuboramiz
+  const p = "n_" + o.map(([id, x]) => id + "-" + (x.length > 1 ? x.slice(2).replace(/\D/g, "") : x)).join("_");
+  if (D.bot && p.length <= 64) {
+    kutish();
+    if (tg && tg.openTelegramLink) { tg.openTelegramLink("https://t.me/" + D.bot + "?start=" + p); tg.close(); }
+    else location.href = "https://t.me/" + D.bot + "?start=" + p;
+    return;
+  }
+  const xabar = "O'zgarishlar ko'p — panelni botning pastki «📊 Panel» tugmasidan ochib saqlang.";
+  if (tg && tg.showAlert) tg.showAlert(xabar); else window.alert(xabar);
+}
+
+let mainBtnFn = null;
+function mainBtn(D, korinsin) {
+  const n = ozg.size;
+  const bar = document.querySelector(".saqla-bar");
+  if (tg && tg.MainButton && tg.platform !== "unknown") {
+    if (mainBtnFn) tg.MainButton.offClick(mainBtnFn);
+    mainBtnFn = () => ozgarishlarniYubor(D);
+    tg.MainButton.onClick(mainBtnFn);
+    if (n && korinsin) tg.MainButton.setParams({ text: "Saqlash · " + n + " ta o'zgarish", is_visible: true, color: getComputedStyle(document.documentElement).getPropertyValue("--series").trim() || "#2a78d6", text_color: "#ffffff" });
+    else tg.MainButton.hide();
+  } else if (bar) {
+    bar.style.display = n && korinsin ? "block" : "none";
+    bar.firstChild.textContent = "Saqlash · " + n + " ta o'zgarish";
+  }
+}
+
+function navbat(D) {
+  D.navbat = D.navbat || [];
+  const kut = kutilayotgan(D);
+  const akkM = Object.fromEntries(D.akkauntlar.map((a) => [a.slug, a]));
+  const ro = el("div", {});
+  const bar = el("div", { class: "saqla-bar" }, el("button", { class: "btn asosiy", onclick: () => ozgarishlarniYubor(D) }, "Saqlash"));
+
+  const qator = (v) => {
+    const j = joriy(v, kut), a = akkM[v.akkaunt] || {};
+    const ozgardi = ozg.has(v.id) || kut[v.id] != null;
+    const faqat = v.holat === "qolda_joylash";
+    const og = ogohlar(v, j, D, kut);
+    const eski = asl(v);
+    let ong;
+    if (j.hozir) ong = el("div", { class: "vq" }, el("b", {}, "Hozir"), el("small", {}, "🚀"));
+    else if (j.vaqt) ong = el("div", { class: "vq" }, el("b", {}, j.vaqt.slice(11)),
+      ozgardi && eski && eski !== j.vaqt ? el("s", {}, eski.slice(8, 10) + "." + eski.slice(5, 7) + " " + eski.slice(11)) : null,
+      kut[v.id] != null && !ozg.has(v.id) ? el("small", {}, "⏳ saqlanmoqda") : null);
+    else ong = el("div", { class: "vq" }, j.holat === "pauzada" ? el("span", { class: "tag p" }, "⏸ To'xtatilgan") : el("span", { class: "tag" }, "Vaqt yo'q"));
+    return el("div", { class: "qi" + (ozgardi ? " ozgardi" : "") + (faqat ? " faqat" : ""), role: "button", tabindex: "0",
+      onclick: () => { if (!faqat) oyna(v); } },
+      el("div", { class: "th", style: v.rasm ? `background-image:url(${v.rasm})` : "" }, v.davomiylik ? el("i", {}, Math.round(v.davomiylik) + " s") : null),
+      el("div", { class: "info" },
+        el("div", { class: "t" }, v.sarlavha || "—"),
+        el("div", { class: "sub" }, el("span", { class: "dot", style: `background:${a.rang || "var(--muted)"}` }), el("span", {}, a.nomi || v.akkaunt),
+          faqat ? el("span", {}, "· 📱 qo'lda") : null),
+        og.map((t) => el("div", { class: "ogoh" }, t))),
+      ong);
+  };
+
+  const chiz = () => {
+    const vs = D.navbat.filter((v) => nfiltr === "hammasi" || v.akkaunt === nfiltr).map((v) => [v, joriy(v, kut)]);
+    const rej = vs.filter(([, j]) => j.vaqt).sort((x, y) => x[1].vaqt.localeCompare(y[1].vaqt));
+    const kunlar = new Map();
+    for (const [v, j] of rej) { const k = j.vaqt.slice(0, 10); if (!kunlar.has(k)) kunlar.set(k, []); kunlar.get(k).push(v); }
+    const toxt = vs.filter(([, j]) => !j.vaqt && j.holat === "pauzada").map(([v]) => v);
+    const kutm = vs.filter(([, j]) => !j.vaqt && j.holat !== "pauzada").map(([v]) => v);
+    const bolim = (nomi, izoh, royxat) => [el("div", { class: "sec" }, el("h2", {}, nomi), el("span", {}, izoh)), el("div", { class: "list" }, royxat.map(qator))];
+    const bosh = D.akkauntlar.filter((a) => nfiltr === "hammasi" || a.slug === nfiltr)
+      .filter((a) => !D.navbat.some((v) => v.akkaunt === a.slug && joriy(v, kut).vaqt));
+    ro.replaceChildren(...[
+      bosh.length ? el("div", { class: "card", style: "padding:10px 14px" }, el("span", { class: "down" }, "⚠️ Navbat bo'sh: "), bosh.map((a) => a.nomi).join(", ")) : null,
+      [...kunlar].map(([k, r]) => bolim(kunNomi(k), r.length + " ta", r)),
+      toxt.length ? bolim("⏸ To'xtatilgan", "vaqt belgilaguningizcha chiqmaydi", toxt) : null,
+      kutm.length ? bolim("🎬 Tasdiq kutmoqda", "vaqt qo'ysangiz — navbatga tushadi", kutm) : null,
+      !vs.length ? el("div", { class: "card bosh" }, "Navbatda video yo'q") : null].flat(Infinity).filter(Boolean));
+    mainBtn(D, true);
+  };
+
+  // ---------- pastdan chiqadigan oyna: kun + soat
+  function oyna(v) {
+    const a = akkM[v.akkaunt] || {};
+    const j0 = joriy(v, kut);
+    const bugun = tkKun(Date.now());
+    let kun = j0.vaqt && !j0.hozir ? j0.vaqt.slice(0, 10) : null;
+    let soat = j0.vaqt && !j0.hozir ? j0.vaqt.slice(11) : null;
+    const bg = el("div", { class: "sheet-bg" }), sh = el("div", { class: "sheet", role: "dialog", "aria-modal": "true" });
+    const yop = () => {
+      sh.classList.remove("ochiq"); bg.classList.remove("ochiq");
+      if (tg && tg.BackButton) { tg.BackButton.offClick(yop); tg.BackButton.hide(); }
+      setTimeout(() => { sh.remove(); bg.remove(); }, 300);
+      chiz();
+    };
+    bg.addEventListener("click", yop);
+    const tebrat = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch (e) {} };
+    const ichki = el("div", {});
+    const qayta = () => {
+      const hozirS = tkHozir();
+      const tanlangan = kun && soat ? kun + " " + soat : null;
+      const otgan = tanlangan && tanlangan <= hozirS;
+      const kunlarQ = el("div", { class: "kunlar" }, Array.from({ length: 21 }, (_, i) => {
+        const k = kunQosh(bugun, i);
+        return el("button", { class: "kb", "aria-pressed": String(k === kun), onclick: () => { kun = k; tebrat(); qayta(); } },
+          el("small", {}, i === 0 ? "Bugun" : i === 1 ? "Ertaga" : HAFTA_Q[haftaKuni(k)]), el("b", {}, Number(k.slice(8, 10))));
+      }));
+      const vaqtlar = [...new Set([...(a.vaqtlar || []), ...(soat ? [soat] : [])])].sort();
+      const inp = el("input", { type: "time", value: soat && !(a.vaqtlar || []).includes(soat) ? soat : "", "aria-label": "Boshqa vaqt" });
+      inp.addEventListener("change", () => { if (inp.value) { soat = inp.value; tebrat(); qayta(); } });
+      const soatQ = el("div", { class: "soatlar" },
+        vaqtlar.map((t) => el("button", { class: "sb", "aria-pressed": String(t === soat), disabled: kun && (kun + " " + t) <= hozirS ? "" : null,
+          onclick: () => { soat = t; tebrat(); qayta(); } }, t)),
+        el("label", { class: "sb", "aria-pressed": String(!!soat && !(a.vaqtlar || []).includes(soat)) }, inp));
+      const og = tanlangan ? ogohlar(v, { vaqt: tanlangan }, D, kut) : [];
+      ichki.replaceChildren(
+        el("div", { class: "lbl" }, "Kun"), kunlarQ,
+        el("div", { class: "lbl" }, "Soat"), soatQ,
+        el("div", { class: "tanlov" },
+          tanlangan ? [el("span", { class: "muted" }, "Joylanadi: "), el("b", {}, kunNomi(kun).split(" · ")[0] + ", " + Number(kun.slice(8, 10)) + "-" + OYLAR[Number(kun.slice(5, 7)) - 1] + " · " + soat)]
+            : el("span", { class: "muted" }, "Kun va soatni tanlang"),
+          otgan ? el("div", { class: "ogoh" }, "Bu vaqt o'tib ketgan") : og.map((t) => el("div", { class: "ogoh" }, t))),
+        el("div", { class: "amallar" },
+          el("button", { class: "btn asosiy", disabled: !tanlangan || otgan ? "" : null, onclick: () => {
+            if (tanlangan === asl(v) && v.holat === "navbatda") ozg.delete(v.id); else ozg.set(v.id, tanlangan);
+            yop(); } }, "Tayyor"),
+          v.holat === "navbatda" && j0.holat !== "pauzada" ? el("button", { class: "btn", onclick: () => { ozg.set(v.id, "p"); tebrat(); yop(); } }, "⏸ To'xtatish") : null,
+          el("button", { class: "btn", style: v.holat === "navbatda" && j0.holat !== "pauzada" ? "" : "grid-column:1/-1",
+            onclick: () => { ozg.set(v.id, "h"); tebrat(); yop(); } }, "🚀 Hozir joylash"),
+          ozg.has(v.id) ? el("button", { class: "btn yengil", onclick: () => { ozg.delete(v.id); yop(); } }, "↺ O'zgarishni bekor qilish") : null));
+    };
+    sh.append(el("div", { class: "grab" }),
+      el("div", { class: "sh-top" }, el("div", { class: "th", style: v.rasm ? `background-image:url(${v.rasm})` : "" }),
+        el("div", {}, el("div", { class: "t" }, v.sarlavha || "—"),
+          el("div", { class: "sub row", style: "margin-top:5px; font-size:13px; color:var(--ink-2)" },
+            el("span", { class: "dot", style: `background:${a.rang || "var(--muted)"}` }), a.nomi || v.akkaunt))),
+      ichki);
+    qayta();
+    document.body.append(bg, sh);
+    mainBtn(D, false);
+    if (tg && tg.BackButton) { tg.BackButton.onClick(yop); tg.BackButton.show(); }
+    void sh.offsetHeight;                                 // reflow — keyin klass qo'shilsa animatsiya ishlaydi
+    sh.classList.add("ochiq"); bg.classList.add("ochiq");
+    const tanl = sh.querySelector('.kb[aria-pressed="true"]');
+    if (tanl) tanl.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+
+  const soni = D.navbat.filter((v) => joriy(v, kut).vaqt).length;
+  const chip = (k, t) => el("button", { "aria-pressed": String(nfiltr === k), onclick: (e) => { nfiltr = k; e.currentTarget.parentNode.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === e.currentTarget))); chiz(); } }, t);
+  chiz();
+  return [el("div", { class: "qhead" }, el("b", {}, "Navbat"), el("span", { class: "muted" }, soni + " ta video rejada · qatorni bosing")),
+    el("div", { class: "chips" }, chip("hammasi", "Hammasi"), D.akkauntlar.map((a) => chip(a.slug, a.nomi + " · " + D.navbat.filter((v) => v.akkaunt === a.slug && joriy(v, kut).vaqt).length))),
+    ro, bar];
+}
+
+// ---------------------------------------------------------------- ishga tushirish
+const BOLIMLAR = [["Umumiy", umumiy], ["Videolar", videolar], ["Mavzular", mavzular], ["Navbat", navbat]];
+function chiz(D) {
+  document.getElementById("yangilandi").textContent = "yangilandi " + sana(D.yangilandi);
+  const app = document.getElementById("app");
+  const joy = el("div", {});
+  let tanlangan = 0;
+  try { tanlangan = Number(sessionStorage.getItem("zavod_tab") || 0); } catch (e) {}
+  const tugmalar = BOLIMLAR.map(([t], i) => el("button", { role: "tab", "aria-selected": String(i === tanlangan), onclick: () => och_bolim(i) }, t));
+  const och_bolim = (i) => {
+    tanlangan = i; tugmalar.forEach((b, j) => b.setAttribute("aria-selected", String(i === j)));
+    try { sessionStorage.setItem("zavod_tab", String(i)); } catch (e) {}
+    if (BOLIMLAR[i][1] !== navbat && tg && tg.MainButton) tg.MainButton.hide();
+    joy.replaceChildren(...[BOLIMLAR[i][1](D)].flat());
+    window.scrollTo(0, 0);
+  };
+  app.replaceChildren(el("div", { class: "tabs", role: "tablist" }, tugmalar), joy);
+  och_bolim(tanlangan);
+}
+
+(async () => {
+  const k = kalit();
+  if (!k) { document.getElementById("app").replaceChildren(el("div", { class: "empty" }, "Panelni Telegram botdagi «📊 Panel» tugmasi orqali oching.")); return; }
+  try { chiz(await och(k)); }
+  catch (e) { document.getElementById("app").replaceChildren(el("div", { class: "empty" }, "Ma'lumotni ochib bo'lmadi: " + e.message + ". Botdagi tugma orqali qayta oching.")); }
+})();
+</script>
+</body>
+</html>
